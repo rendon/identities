@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+GOM_VENDOR_NAME=$GOPATH
+gom exec revel run identities

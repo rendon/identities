@@ -1,0 +1,8 @@
+test-results/
+tmp/
+_vendor/
+*.swp
+tags
+app/routes/routes.go
+app/tmp/main.go
+app/tmp/

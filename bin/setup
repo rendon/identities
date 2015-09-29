@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# In order to keep the files in the root of our repository we
+# have to make some arrangements (hacks?).
+rm -f $GOPATH/src/identities
+ln -svf $(pwd) $GOPATH/src/identities
+
+go get github.com/mattn/gom
+
+# Path relative to $GOPATH
+export GOM_VENDOR_NAME=../../.go
+gom -test install

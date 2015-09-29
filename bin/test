@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Path relative to $GOPATH
+export GOM_VENDOR_NAME=../../.go
+gom exec revel test identities

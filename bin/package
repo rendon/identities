@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+GOM_VENDOR_NAME=$GOPATH
+GOOS=linux GOARCH=amd64 gom exec revel package identities

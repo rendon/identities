@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+sudo cp -v bin/i2pg.js /usr/bin/i2pg

@@ -1,0 +1,21 @@
+# vim: set ts=4 sts=4 sw=4
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+module:testrunner
+OPTIONS                                         App.Cors
+GET     /                                       App.Index
+
+# Identities
+GET     /ids/:network/:username                 Identities.ID
+GET     /usernames/:network/:id                 Identities.Username
+
+# Ignore favicon requests
+GET     /favicon.ico                            404
+
+# Map static resources from the /app/public folder to the /public path
+GET     /public/*filepath                       Static.Serve("public")
+
+# Catch all
+*       /:controller/:action                    :controller.:action

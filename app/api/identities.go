@@ -28,14 +28,16 @@ var addTo = map[string]func(*models.Identity, *mgo.Collection) error{
 	"twitter": addToTwitter,
 }
 
-func newTwitterClient() *anaconda.TwitterApi {
+var ta *anaconda.TwitterApi // Twitter API
+
+func init() {
 	var ck = os.Getenv("TWITTER_CONSUMER_KEY")
 	var cs = os.Getenv("TWITTER_CONSUMER_SECRET")
 	var at = os.Getenv("TWITTER_ACCESS_TOKEN")
 	var ats = os.Getenv("TWITTER_ACCESS_TOKEN_SECRET")
 	anaconda.SetConsumerKey(ck)
 	anaconda.SetConsumerSecret(cs)
-	return anaconda.NewTwitterApi(at, ats)
+	ta = anaconda.NewTwitterApi(at, ats)
 }
 
 func WipeIdentitiesDatabase() error {
@@ -52,8 +54,6 @@ func getFromTwitter(id, username string) (*models.Identity, error) {
 		return nil, fmt.Errorf("Id and username are both empty.")
 	}
 
-	api := newTwitterClient()
-
 	var user anaconda.User
 	var err error
 	if id != "" {
@@ -61,9 +61,9 @@ func getFromTwitter(id, username string) (*models.Identity, error) {
 		if err != nil {
 			return nil, err
 		}
-		user, err = api.GetUsersShowById(nid, nil)
+		user, err = ta.GetUsersShowById(nid, nil)
 	} else {
-		user, err = api.GetUsersShow(username, nil)
+		user, err = ta.GetUsersShow(username, nil)
 	}
 
 	var i = models.Identity{

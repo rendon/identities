@@ -11,12 +11,12 @@ This API provides two endpoints:
 - Not exactly a dependency but a requirement, you need an entry in your `/etc/hosts` with `mongodb-server` pointing to the server where mongoDB is running on.
 - This program uses a set of tokens to connect to the Twitter API, these values are read from the following environment variables, make sure they are there:
 
-
-    export ACCESS_TOKEN="..."
-    export ACCESS_TOKEN_SECRET="..."
-    export TWITTER_CONSUMER_KEY="..."
-    export TWITTER_CONSUMER_SECRET="..."
-
+```
+export ACCESS_TOKEN="..."
+export ACCESS_TOKEN_SECRET="..."
+export TWITTER_CONSUMER_KEY="..."
+export TWITTER_CONSUMER_SECRET="..."
+```
 
 # Development
 ## Setup

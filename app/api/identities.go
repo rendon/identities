@@ -1,18 +1,16 @@
 package api
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
-	"regexp"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/rendon/anaconda"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"menteslibres.net/gosexy/rest"
 
 	"identities/app/config"
 	"identities/app/models"
@@ -30,36 +28,14 @@ var addTo = map[string]func(*models.Identity, *mgo.Collection) error{
 	"twitter": addToTwitter,
 }
 
-func newTwitterClient(tickets int) (*anaconda.TwitterApi, error) {
-	client, err := rest.New("http://api-server:10000")
-	if err != nil {
-		return nil, err
-	}
-	client.Header.Set("Content-type", "application/json")
-
-	var c = models.CredentialRequestData{
-		Server:  "twitter",
-		Tickets: tickets,
-	}
-	req, err := json.Marshal(c)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp models.CredentialResponse
-	err = client.PostRaw(&resp, "/credentials/request", req)
-	if err != nil {
-		return nil, err
-	}
-
-	var t = regexp.MustCompile("\\s+").Split(resp.Data.Tokens, 4)
-	if len(t) != 4 {
-		return nil, errors.New("There was a problem getting the tokens.")
-	}
-	var ck, cs, at, ats = t[0], t[1], t[2], t[3]
+func newTwitterClient() *anaconda.TwitterApi {
+	var ck = os.Getenv("TWITTER_CONSUMER_KEY")
+	var cs = os.Getenv("TWITTER_CONSUMER_SECRET")
+	var at = os.Getenv("TWITTER_ACCESS_TOKEN")
+	var ats = os.Getenv("TWITTER_ACCESS_TOKEN_SECRET")
 	anaconda.SetConsumerKey(ck)
 	anaconda.SetConsumerSecret(cs)
-	return anaconda.NewTwitterApi(at, ats), nil
+	return anaconda.NewTwitterApi(at, ats)
 }
 
 func WipeIdentitiesDatabase() error {
@@ -72,16 +48,14 @@ func WipeIdentitiesDatabase() error {
 }
 
 func getFromTwitter(id, username string) (*models.Identity, error) {
-	api, err := newTwitterClient(1)
-	if err != nil {
-		return nil, err
-	}
-
 	if id == "" && username == "" {
 		return nil, fmt.Errorf("Id and username are both empty.")
 	}
 
+	api := newTwitterClient()
+
 	var user anaconda.User
+	var err error
 	if id != "" {
 		nid, err := strconv.ParseInt(id, 10, 64)
 		if err != nil {

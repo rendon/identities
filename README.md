@@ -1,13 +1,23 @@
-# Social API
-Social help us to avoid retrieving a profile twice, speeding up our explorations.
+# Identities API
+Retrieve and cache social network identities.
 
-This is the Social API, it allows to add new profiles to the local database or retrieve existing ones.
+This API provides two endpoints:
 
-# Run
+    GET     /ids/:network/:username     # Retrieve ID given a social network and a user name
+    GET     /usernames/:network/:id     # Retrieve user name given social network and user ID
+
+# Dependencies
+In order to run this software you need a mongoDB server running with standard settings. I recommend using [Docker](https://hub.docker.com/_/mongo/).
+
+# Development
+## Setup
+
+    > bin/setup
+
+## Run
 
     > bin/run
 
-# Test
+## Test
 
     > bin/test
-

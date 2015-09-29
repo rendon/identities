@@ -1,6 +1,5 @@
 gom 'github.com/revel/revel', :tag => 'v0.12.0'
 gom 'github.com/revel/cmd/revel', :tag => 'v0.12.0'
-gom 'menteslibres.net/gosexy/redis'
 gom 'gopkg.in/mgo.v2'
 gom 'github.com/rendon/anaconda'
 gom 'menteslibres.net/gosexy/rest'

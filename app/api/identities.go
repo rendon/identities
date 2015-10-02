@@ -7,18 +7,29 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/rendon/anaconda"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
-	"identities/app/config"
 	"identities/app/models"
 )
 
 var (
 	ErrUnknownNet = errors.New("Unknown network.")
+	MongoDSN      = `mongodb-server`
 )
+
+var ExpirationTime = map[string]time.Duration{
+	"twitter":   30 * 24 * time.Hour,
+	"instagram": 30 * 24 * time.Hour,
+}
+
+var Networks = map[string]bool{
+	"twitter":   true,
+	"instagram": true,
+}
 
 var getFrom = map[string]func(string, string) (*models.Identity, error){
 	"twitter": getFromTwitter,
@@ -41,7 +52,7 @@ func init() {
 }
 
 func WipeIdentitiesDatabase() error {
-	var session, err = mgo.Dial(config.MongoDSN)
+	var session, err = mgo.Dial(MongoDSN)
 	if err != nil {
 		return err
 	}
@@ -117,11 +128,15 @@ func addToTwitter(item *models.Identity, c *mgo.Collection) error {
 }
 
 func GetIdentity(network, id, username string) (*models.Identity, error) {
+	network = strings.ToLower(network)
+	username = strings.ToLower(username)
+	id = strings.ToLower(id) // ID is not necessarily an integer
+
 	var ok bool
-	if _, ok = config.Networks[network]; !ok {
+	if _, ok = Networks[network]; !ok {
 		return nil, ErrUnknownNet
 	}
-	var session, err = mgo.Dial(config.MongoDSN)
+	var session, err = mgo.Dial(MongoDSN)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +180,7 @@ func GetIdentity(network, id, username string) (*models.Identity, error) {
 }
 
 func WipeDatabase() error {
-	var session, err = mgo.Dial(config.MongoDSN)
+	var session, err = mgo.Dial(MongoDSN)
 	if err != nil {
 		return err
 	}

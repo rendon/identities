@@ -55,3 +55,16 @@ func (t *AppTest) TestGetCachedUserName() {
 	t.Assert(res.Data.Username == "twitterdev")
 	t.Assert(res.Data.Status == "cached")
 }
+
+func (t *AppTest) TestGetAtUsername() {
+	t.Get("/ids/twitter/twitterdev")
+	t.AssertOk()
+
+	t.Get("/ids/twitter/@twitterdev")
+	t.AssertOk()
+	var res models.IdentityResponse
+	t.Assert(json.Unmarshal(t.ResponseBody, &res) == nil)
+	t.Assert(res.Data.Id == "2244994945")
+	t.Assert(res.Data.Username == "twitterdev")
+	t.Assert(res.Data.Status == "cached")
+}

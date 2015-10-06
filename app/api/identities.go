@@ -18,7 +18,7 @@ import (
 
 var (
 	ErrUnknownNet = errors.New("Unknown network.")
-	MongoDSN      = `mongodb-server`
+	MongoDSN      = "mongodb-server"
 )
 
 var ExpirationTime = map[string]time.Duration{
@@ -131,6 +131,10 @@ func GetIdentity(network, id, username string) (*models.Identity, error) {
 	network = strings.ToLower(network)
 	username = strings.ToLower(username)
 	id = strings.ToLower(id) // ID is not necessarily an integer
+
+	if strings.HasPrefix(username, "@") {
+		username = username[1:]
+	}
 
 	var ok bool
 	if _, ok = Networks[network]; !ok {

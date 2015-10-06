@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-CMD1='rm -rf identities/ && mkdir -p identities/'
+USER="rendon"
+SERVER="mywebsite"
+CMD1='killall identities; rm -rf identities/ && mkdir -p identities/'
 CMD2='tar xzfv identities.tar.gz -C identities/ && rm -rf identities.tar.gz;'
 
 bash bin/package &&  \
-ssh -i ~/.ssh/criticalmasser.pem deploy@api-server $CMD1 && \
-scp -i ~/.ssh/criticalmasser.pem identities.tar.gz deploy@api-server: &&
-ssh -i ~/.ssh/criticalmasser.pem deploy@api-server $CMD2
+ssh $USER@$SERVER $CMD1 && \
+scp identities.tar.gz $USER@$SERVER: &&
+ssh $USER@$SERVER $CMD2
 
-CMD3='killall identities; cd identities; nohup ./run.sh > log.out 2> log.err &'
-ssh -i ~/.ssh/criticalmasser.pem deploy@api-server $CMD3
+CMD3='cd identities; nohup ./run.sh > log.out 2> log.err &'
+ssh $USER@$SERVER $CMD3

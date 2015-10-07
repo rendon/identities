@@ -82,6 +82,7 @@ func getFromTwitter(id, username string) (*models.Identity, error) {
 		Id:              user.IdStr,
 		Username:        strings.ToLower(user.ScreenName),
 		ProfileImageURL: user.ProfileImageURL,
+		ProfileURL:      "https://twitter.com/" + user.ScreenName,
 	}
 	if err != nil {
 		return nil, err

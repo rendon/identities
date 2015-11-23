@@ -7,5 +7,5 @@ ln -svf $(pwd) $GOPATH/src/identities
 go get github.com/mattn/gom
 
 # Path relative to $GOPATH
-export GOM_VENDOR_NAME=../../.go
+export GOM_VENDOR_NAME=../../../.go
 gom -test install

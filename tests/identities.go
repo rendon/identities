@@ -68,3 +68,23 @@ func (t *AppTest) TestGetAtUsername() {
 	t.Assert(res.Data.Username == "twitterdev")
 	t.Assert(res.Data.Status == "cached")
 }
+
+func (t *AppTest) TestGetIdentityWithUsername() {
+	t.Get("/identities/twitterdev")
+	t.AssertOk()
+
+	var res models.IdentityResponse
+	t.Assert(json.Unmarshal(t.ResponseBody, &res) == nil)
+	t.Assert(res.Data.Id == "2244994945")
+	t.Assert(res.Data.Username == "twitterdev")
+}
+
+func (t *AppTest) TestGetIdentityWithID() {
+	t.Get("/identities/2244994945")
+	t.AssertOk()
+
+	var res models.IdentityResponse
+	t.Assert(json.Unmarshal(t.ResponseBody, &res) == nil)
+	t.Assert(res.Data.Id == "2244994945")
+	t.Assert(res.Data.Username == "twitterdev")
+}

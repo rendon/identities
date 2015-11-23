@@ -192,3 +192,12 @@ func WipeDatabase() error {
 	defer session.Close()
 	return session.DB("identities").DropDatabase()
 }
+
+func Identify(user string) (*models.Identity, error) {
+	// TODO: Generalize for all social networks
+	if _, err := strconv.ParseInt(user, 10, 64); err == nil {
+		return GetIdentity("twitter", user, "")
+	} else {
+		return GetIdentity("twitter", "", user)
+	}
+}

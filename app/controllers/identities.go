@@ -25,3 +25,11 @@ func (c *Identities) Username(network, id string) revel.Result {
 		return c.Error(err)
 	}
 }
+
+func (c *Identities) Identity(user string) revel.Result {
+	if res, err := api.Identify(user); err == nil {
+		return c.Data(res)
+	} else {
+		return c.Error(err)
+	}
+}

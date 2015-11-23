@@ -10,6 +10,7 @@ GET     /                                       App.Index
 # Identities
 GET     /ids/:network/:username                 Identities.ID
 GET     /usernames/:network/:id                 Identities.Username
+GET     /identities/:user                       Identities.Identity
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

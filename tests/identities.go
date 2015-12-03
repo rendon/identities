@@ -9,7 +9,7 @@ import (
 )
 
 func (t *AppTest) TestGetUncachedUserId() {
-	t.Get("/ids/twitter/twitterdev")
+	t.Get("/v1/ids/twitter/twitterdev")
 	log.Printf("Response body: %s\n", t.ResponseBody)
 	t.AssertOk()
 	var res models.IdentityResponse
@@ -19,12 +19,12 @@ func (t *AppTest) TestGetUncachedUserId() {
 }
 
 func (t *AppTest) TestGetCachedUserId() {
-	t.Get("/ids/twitter/twitterdev")
+	t.Get("/v1/ids/twitter/twitterdev")
 	log.Printf("Response body: %s\n", t.ResponseBody)
 	t.AssertOk()
 
 	time.Sleep(0 * time.Second)
-	t.Get("/ids/twitter/twitterdev")
+	t.Get("/v1/ids/twitter/twitterdev")
 	log.Printf("Response body 2: %s\n", t.ResponseBody)
 	t.AssertOk()
 	var res models.IdentityResponse
@@ -34,7 +34,7 @@ func (t *AppTest) TestGetCachedUserId() {
 }
 
 func (t *AppTest) TestGetUncachedUserName() {
-	t.Get("/usernames/twitter/2244994945")
+	t.Get("/v1/usernames/twitter/2244994945")
 	log.Printf("Response body: %s\n", t.ResponseBody)
 	t.AssertOk()
 	var res models.IdentityResponse
@@ -44,10 +44,10 @@ func (t *AppTest) TestGetUncachedUserName() {
 }
 
 func (t *AppTest) TestGetCachedUserName() {
-	t.Get("/usernames/twitter/2244994945")
+	t.Get("/v1/usernames/twitter/2244994945")
 	t.AssertOk()
 
-	t.Get("/usernames/twitter/2244994945")
+	t.Get("/v1/usernames/twitter/2244994945")
 	log.Printf("Response body 2: %s\n", t.ResponseBody)
 	t.AssertOk()
 	var res models.IdentityResponse
@@ -57,10 +57,10 @@ func (t *AppTest) TestGetCachedUserName() {
 }
 
 func (t *AppTest) TestGetAtUsername() {
-	t.Get("/ids/twitter/twitterdev")
+	t.Get("/v1/ids/twitter/twitterdev")
 	t.AssertOk()
 
-	t.Get("/ids/twitter/@twitterdev")
+	t.Get("/v1/ids/twitter/@twitterdev")
 	t.AssertOk()
 	var res models.IdentityResponse
 	t.Assert(json.Unmarshal(t.ResponseBody, &res) == nil)
@@ -70,7 +70,7 @@ func (t *AppTest) TestGetAtUsername() {
 }
 
 func (t *AppTest) TestGetIdentityWithUsername() {
-	t.Get("/identities/twitterdev")
+	t.Get("/v1/identities/twitterdev")
 	t.AssertOk()
 
 	var res models.IdentityResponse
@@ -80,7 +80,7 @@ func (t *AppTest) TestGetIdentityWithUsername() {
 }
 
 func (t *AppTest) TestGetIdentityWithID() {
-	t.Get("/identities/2244994945")
+	t.Get("/v1/identities/2244994945")
 	t.AssertOk()
 
 	var res models.IdentityResponse

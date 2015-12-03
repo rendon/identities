@@ -8,9 +8,9 @@ OPTIONS                                         App.Cors
 GET     /                                       App.Index
 
 # Identities
-GET     /ids/:network/:username                 Identities.ID
-GET     /usernames/:network/:id                 Identities.Username
-GET     /identities/:user                       Identities.Identity
+GET     /v1/ids/:network/:username                 Identities.ID
+GET     /v1/usernames/:network/:id                 Identities.Username
+GET     /v1/identities/:user                       Identities.Identity
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

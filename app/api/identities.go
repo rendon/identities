@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/rendon/anaconda"
+	"github.com/rendon/kb"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
@@ -42,10 +44,27 @@ var addTo = map[string]func(*models.Identity, *mgo.Collection) error{
 var ta *anaconda.TwitterApi // Twitter API
 
 func init() {
-	var ck = os.Getenv("TWITTER_CONSUMER_KEY")
-	var cs = os.Getenv("TWITTER_CONSUMER_SECRET")
-	var at = os.Getenv("TWITTER_ACCESS_TOKEN")
-	var ats = os.Getenv("TWITTER_ACCESS_TOKEN_SECRET")
+	key_file := os.Getenv("TWITTER_KEYS_FILE")
+	buf, err := ioutil.ReadFile(key_file)
+	if err != nil {
+		log.Fatalf("Failed to read keys file: %s", err)
+	}
+	for _, line := range strings.Split(string(buf), "\n") {
+		kb.AddKey(kb.Key{Value: line})
+	}
+	rotateKeys()
+}
+
+func rotateKeys() {
+	k := kb.NextKey()
+	tokens := strings.Split(k.Value.(string), " ")
+	if len(tokens) != 4 {
+		log.Fatal("Failed to set keys.")
+	}
+	ck := tokens[0]
+	cs := tokens[1]
+	at := tokens[2]
+	ats := tokens[3]
 	anaconda.SetConsumerKey(ck)
 	anaconda.SetConsumerSecret(cs)
 	ta = anaconda.NewTwitterApi(at, ats)
@@ -67,14 +86,25 @@ func getFromTwitter(id, username string) (*models.Identity, error) {
 
 	var user anaconda.User
 	var err error
-	if id != "" {
-		nid, err := strconv.ParseInt(id, 10, 64)
-		if err != nil {
-			return nil, err
+	for {
+		if id != "" {
+			nid, err := strconv.ParseInt(id, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			user, err = ta.GetUsersShowById(nid, nil)
+		} else {
+			user, err = ta.GetUsersShow(username, nil)
 		}
-		user, err = ta.GetUsersShowById(nid, nil)
-	} else {
-		user, err = ta.GetUsersShow(username, nil)
+		if aerr, ok := err.(*anaconda.ApiError); ok {
+			if limitError, _ := aerr.RateLimitCheck(); !limitError {
+				return nil, err
+			}
+			log.Printf("Rotating keys")
+			rotateKeys()
+		} else {
+			break
+		}
 	}
 
 	var i = models.Identity{

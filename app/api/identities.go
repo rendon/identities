@@ -56,6 +56,7 @@ func init() {
 }
 
 func rotateKeys() {
+	log.Printf("Rotating keys...")
 	k := kb.NextKey()
 	tokens := strings.Split(k.Value.(string), " ")
 	if len(tokens) != 4 {
@@ -68,6 +69,7 @@ func rotateKeys() {
 	anaconda.SetConsumerKey(ck)
 	anaconda.SetConsumerSecret(cs)
 	ta = anaconda.NewTwitterApi(at, ats)
+	ta.ReturnRateLimitError(true)
 }
 
 func WipeIdentitiesDatabase() error {
@@ -86,7 +88,9 @@ func getFromTwitter(id, username string) (*models.Identity, error) {
 
 	var user anaconda.User
 	var err error
+	try := 0
 	for {
+		log.Printf("Next try: %d", try)
 		if id != "" {
 			nid, err := strconv.ParseInt(id, 10, 64)
 			if err != nil {
@@ -95,6 +99,9 @@ func getFromTwitter(id, username string) (*models.Identity, error) {
 			user, err = ta.GetUsersShowById(nid, nil)
 		} else {
 			user, err = ta.GetUsersShow(username, nil)
+		}
+		if err == nil {
+			break
 		}
 		if aerr, ok := err.(*anaconda.ApiError); ok {
 			if limitError, _ := aerr.RateLimitCheck(); !limitError {
@@ -105,6 +112,7 @@ func getFromTwitter(id, username string) (*models.Identity, error) {
 		} else {
 			break
 		}
+		try += 1
 	}
 
 	var i = models.Identity{
@@ -206,7 +214,7 @@ func GetIdentity(network, id, username string) (*models.Identity, error) {
 			return nil, err
 		}
 		if err = addTo[network](one, identities); err != nil {
-			log.Printf("==>Error: %#v", one)
+			log.Printf("==>Error: %#v : %s", one, err)
 			return nil, err
 		}
 		one.Status = "new"

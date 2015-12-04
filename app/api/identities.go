@@ -58,7 +58,6 @@ func init() {
 }
 
 func rotateKeys() {
-	log.Printf("Rotating keys...")
 	k := kb.NextKey()
 	tokens := strings.Split(k.Value.(string), " ")
 	if len(tokens) != 4 {
@@ -99,11 +98,10 @@ func getFromTwitter(id, username string) (*models.Identity, error) {
 	} else {
 		user, err = ta.GetUsersShow(username, nil)
 	}
-	if err != nil {
-		log.Printf("Here is the problem: %s", err)
-		return nil, err
+	if err != nil || user.IdStr == "" {
+		rotateKeys()
+		return getFromTwitter(id, username)
 	}
-	rotateKeys()
 
 	var i = models.Identity{
 		Network:         "twitter",
@@ -198,14 +196,13 @@ func GetIdentity(network, id, username string) (*models.Identity, error) {
 	}
 
 	if err != nil && err.Error() == "not found" {
-		log.Printf("Not found!")
 		one, err = getFrom[network](id, username)
 		if err != nil {
 			return nil, err
 		}
 		if err = addTo[network](one, identities); err != nil {
-			log.Printf("==>Error: %#v : %s", one, err)
-			return nil, err
+			log.Printf("Failed to obtain profile: %s", err)
+			return nil, errors.New("Failed to obtain profile")
 		}
 		one.Status = "new"
 	}

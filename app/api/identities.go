@@ -42,6 +42,7 @@ var addTo = map[string]func(*models.Identity, *mgo.Collection) error{
 }
 
 var ta *anaconda.TwitterApi // Twitter API
+var limit = 0
 
 func init() {
 	key_file := os.Getenv("TWITTER_KEYS_FILE")
@@ -99,6 +100,11 @@ func getFromTwitter(id, username string) (*models.Identity, error) {
 		user, err = ta.GetUsersShow(username, nil)
 	}
 	if err != nil || user.IdStr == "" {
+		limit++
+		if limit == 10 {
+			limit = 0
+			return nil, errors.New("Not found")
+		}
 		rotateKeys()
 		return getFromTwitter(id, username)
 	}

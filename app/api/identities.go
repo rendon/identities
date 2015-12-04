@@ -50,7 +50,9 @@ func init() {
 		log.Fatalf("Failed to read keys file: %s", err)
 	}
 	for _, line := range strings.Split(string(buf), "\n") {
-		kb.AddKey(kb.Key{Value: line})
+		if line != "" {
+			kb.AddKey(kb.Key{Value: line})
+		}
 	}
 	rotateKeys()
 }
@@ -60,7 +62,7 @@ func rotateKeys() {
 	k := kb.NextKey()
 	tokens := strings.Split(k.Value.(string), " ")
 	if len(tokens) != 4 {
-		log.Fatal("Failed to set keys.")
+		log.Fatalf("Failed to set keys: %q", k.Value.(string))
 	}
 	ck := tokens[0]
 	cs := tokens[1]
@@ -88,32 +90,20 @@ func getFromTwitter(id, username string) (*models.Identity, error) {
 
 	var user anaconda.User
 	var err error
-	try := 0
-	for {
-		log.Printf("Next try: %d", try)
-		if id != "" {
-			nid, err := strconv.ParseInt(id, 10, 64)
-			if err != nil {
-				return nil, err
-			}
-			user, err = ta.GetUsersShowById(nid, nil)
-		} else {
-			user, err = ta.GetUsersShow(username, nil)
+	if id != "" {
+		nid, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			return nil, err
 		}
-		if err == nil {
-			break
-		}
-		if aerr, ok := err.(*anaconda.ApiError); ok {
-			if limitError, _ := aerr.RateLimitCheck(); !limitError {
-				return nil, err
-			}
-			log.Printf("Rotating keys")
-			rotateKeys()
-		} else {
-			break
-		}
-		try += 1
+		user, err = ta.GetUsersShowById(nid, nil)
+	} else {
+		user, err = ta.GetUsersShow(username, nil)
 	}
+	if err != nil {
+		log.Printf("Here is the problem: %s", err)
+		return nil, err
+	}
+	rotateKeys()
 
 	var i = models.Identity{
 		Network:         "twitter",

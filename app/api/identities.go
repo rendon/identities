@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rendon/anaconda"
 	"github.com/rendon/kb"
+	"github.com/rendon/tw"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
@@ -41,7 +41,7 @@ var addTo = map[string]func(*models.Identity, *mgo.Collection) error{
 	"twitter": addToTwitter,
 }
 
-var ta *anaconda.TwitterApi // Twitter API
+var tc *tw.Client
 var limit = 0
 
 func init() {
@@ -55,23 +55,21 @@ func init() {
 			kb.AddKey(kb.Key{Value: line})
 		}
 	}
-	rotateKeys()
+	tc = tw.NewClient()
+	if err = rotateKeys(); err != nil {
+		log.Fatalf("Failed to set keys: %s", err)
+	}
 }
 
-func rotateKeys() {
+func rotateKeys() error {
 	k := kb.NextKey()
 	tokens := strings.Split(k.Value.(string), " ")
-	if len(tokens) != 4 {
+	if len(tokens) < 2 {
 		log.Fatalf("Failed to set keys: %q", k.Value.(string))
 	}
 	ck := tokens[0]
 	cs := tokens[1]
-	at := tokens[2]
-	ats := tokens[3]
-	anaconda.SetConsumerKey(ck)
-	anaconda.SetConsumerSecret(cs)
-	ta = anaconda.NewTwitterApi(at, ats)
-	ta.ReturnRateLimitError(true)
+	return tc.SetKeys(ck, cs)
 }
 
 func WipeIdentitiesDatabase() error {
@@ -85,39 +83,53 @@ func WipeIdentitiesDatabase() error {
 
 func getFromTwitter(id, username string) (*models.Identity, error) {
 	if id == "" && username == "" {
-		return nil, fmt.Errorf("Id and username are both empty.")
+		return nil, fmt.Errorf("ID and username are both empty.")
 	}
 
-	var user anaconda.User
+	var data map[string]interface{}
 	var err error
 	if id != "" {
 		nid, err := strconv.ParseInt(id, 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		user, err = ta.GetUsersShowById(nid, nil)
+		data, err = tc.GetUsersShowByID(nid)
 	} else {
-		user, err = ta.GetUsersShow(username, nil)
+		data, err = tc.GetUsersShow(username)
 	}
-	if err != nil || user.IdStr == "" {
-		limit++
-		if limit == 10 {
-			limit = 0
-			return nil, errors.New("Not found")
+	if err == tw.ErrTooManyRequests {
+		if err = rotateKeys(); err != nil {
+			return nil, err
 		}
-		rotateKeys()
 		return getFromTwitter(id, username)
-	}
-
-	var i = models.Identity{
-		Network:         "twitter",
-		Id:              user.IdStr,
-		Username:        strings.ToLower(user.ScreenName),
-		ProfileImageURL: user.ProfileImageURL,
-		ProfileURL:      "https://twitter.com/" + user.ScreenName,
 	}
 	if err != nil {
 		return nil, err
+	}
+
+	userID, ok := data["id_str"].(string)
+	if !ok {
+		return nil, errors.New("Failed to retrieve user data")
+	}
+
+	screenName, ok := data["screen_name"].(string)
+	if !ok {
+		return nil, errors.New("Failed to retrieve user data")
+	}
+
+	profileImageURL, ok := data["profile_image_url"].(string)
+	if !ok {
+		return nil, errors.New("Failed to retrieve user data")
+	}
+
+	userID = strings.ToLower(userID)
+	screenName = strings.ToLower(screenName)
+	var i = models.Identity{
+		Network:         "twitter",
+		ID:              userID,
+		Username:        screenName,
+		ProfileImageURL: profileImageURL,
+		ProfileURL:      "https://twitter.com/" + screenName,
 	}
 	return &i, nil
 }

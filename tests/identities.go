@@ -2,7 +2,6 @@ package tests
 
 import (
 	"encoding/json"
-	"log"
 	"time"
 
 	"identities/app/models"
@@ -10,32 +9,28 @@ import (
 
 func (t *AppTest) TestGetUncachedUserId() {
 	t.Get("/v1/ids/twitter/twitterdev")
-	log.Printf("Response body: %s\n", t.ResponseBody)
 	t.AssertOk()
 	var res models.IdentityResponse
 	t.Assert(json.Unmarshal(t.ResponseBody, &res) == nil)
-	t.Assert(res.Data.Id == "2244994945")
+	t.Assert(res.Data.ID == "2244994945")
 	t.Assert(res.Data.Status == "new")
 }
 
 func (t *AppTest) TestGetCachedUserId() {
 	t.Get("/v1/ids/twitter/twitterdev")
-	log.Printf("Response body: %s\n", t.ResponseBody)
 	t.AssertOk()
 
 	time.Sleep(0 * time.Second)
 	t.Get("/v1/ids/twitter/twitterdev")
-	log.Printf("Response body 2: %s\n", t.ResponseBody)
 	t.AssertOk()
 	var res models.IdentityResponse
 	t.Assert(json.Unmarshal(t.ResponseBody, &res) == nil)
-	t.Assert(res.Data.Id == "2244994945")
+	t.Assert(res.Data.ID == "2244994945")
 	t.Assert(res.Data.Status == "cached")
 }
 
 func (t *AppTest) TestGetUncachedUserName() {
 	t.Get("/v1/usernames/twitter/2244994945")
-	log.Printf("Response body: %s\n", t.ResponseBody)
 	t.AssertOk()
 	var res models.IdentityResponse
 	t.Assert(json.Unmarshal(t.ResponseBody, &res) == nil)
@@ -48,7 +43,6 @@ func (t *AppTest) TestGetCachedUserName() {
 	t.AssertOk()
 
 	t.Get("/v1/usernames/twitter/2244994945")
-	log.Printf("Response body 2: %s\n", t.ResponseBody)
 	t.AssertOk()
 	var res models.IdentityResponse
 	t.Assert(json.Unmarshal(t.ResponseBody, &res) == nil)
@@ -64,7 +58,7 @@ func (t *AppTest) TestGetAtUsername() {
 	t.AssertOk()
 	var res models.IdentityResponse
 	t.Assert(json.Unmarshal(t.ResponseBody, &res) == nil)
-	t.Assert(res.Data.Id == "2244994945")
+	t.Assert(res.Data.ID == "2244994945")
 	t.Assert(res.Data.Username == "twitterdev")
 	t.Assert(res.Data.Status == "cached")
 }
@@ -75,7 +69,7 @@ func (t *AppTest) TestGetIdentityWithUsername() {
 
 	var res models.IdentityResponse
 	t.Assert(json.Unmarshal(t.ResponseBody, &res) == nil)
-	t.Assert(res.Data.Id == "2244994945")
+	t.Assert(res.Data.ID == "2244994945")
 	t.Assert(res.Data.Username == "twitterdev")
 }
 
@@ -85,6 +79,6 @@ func (t *AppTest) TestGetIdentityWithID() {
 
 	var res models.IdentityResponse
 	t.Assert(json.Unmarshal(t.ResponseBody, &res) == nil)
-	t.Assert(res.Data.Id == "2244994945")
+	t.Assert(res.Data.ID == "2244994945")
 	t.Assert(res.Data.Username == "twitterdev")
 }

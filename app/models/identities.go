@@ -2,7 +2,7 @@ package models
 
 type Identity struct {
 	Network         string `json:"network"            bson:"network"`
-	Id              string `json:"id"                 bson:"id"`
+	ID              string `json:"id"                 bson:"id"`
 	Username        string `json:"username"           bson:"username"`
 	ProfileURL      string `json:"profile_url"        bson:"profile_url"`
 	ProfileImageURL string `json:"profile_image_url"  bson:"profile_image_url"`

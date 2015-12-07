@@ -67,6 +67,7 @@ func rotateKeys() error {
 	if len(tokens) < 2 {
 		log.Fatalf("Failed to set keys: %q", k.Value.(string))
 	}
+	log.Printf("Rotating keys...")
 	ck := tokens[0]
 	cs := tokens[1]
 	return tc.SetKeys(ck, cs)
@@ -88,8 +89,9 @@ func getFromTwitter(id, username string) (*models.Identity, error) {
 
 	var data map[string]interface{}
 	var err error
+	var nid int64
 	if id != "" {
-		nid, err := strconv.ParseInt(id, 10, 64)
+		nid, err = strconv.ParseInt(id, 10, 64)
 		if err != nil {
 			return nil, err
 		}
@@ -97,6 +99,7 @@ func getFromTwitter(id, username string) (*models.Identity, error) {
 	} else {
 		data, err = tc.GetUsersShow(username)
 	}
+
 	if err == tw.ErrTooManyRequests {
 		if err = rotateKeys(); err != nil {
 			return nil, err
